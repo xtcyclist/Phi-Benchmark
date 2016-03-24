@@ -34,3 +34,7 @@ $ sh run.sh
 ```
 
 The results are stored in bandwidth.log and latency.log.
+
+
+### Contact
+Xuntao Cheng, xcheng002@ntu.edu.sg
