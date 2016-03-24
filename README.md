@@ -6,6 +6,8 @@ Phi-Benchmark is a preliminary benchmark to measure hardware characteristics on 
 
 Parts of the codes are adopted from STREAM and BENCHIT. 
 
+Phi-Benchmark is coded for the KNC architecture. To compile and run it on KNL, modifications may be needed. 
+
 ### Compile
 All codes are cross-compiled to run natively on Xeon Phi. To compile, run
 
