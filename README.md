@@ -3,7 +3,7 @@
 Phi-Benchmark is a preliminary benchmark to measure hardware characteristics on Xeon Phi. Currently, the implementation includes 
   - the main memory access latency measurement;
   - L2 cache access latency measurement.
-
+Parts of the codes are adopted from STREAM and BENCHIT. 
 
 ### Compile
 All codes are cross-compiled to run natively on Xeon Phi. To compile, run
