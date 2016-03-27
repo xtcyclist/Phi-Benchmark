@@ -33,10 +33,10 @@ $ scp ./*.sh mic#:/your_folder
 
 To execute, simply run:
 ```sh
-$ sh run.sh
+$ sh run.sh [The total number of hardware threads]
 ```
 
-The results are stored in bandwidth.log and latency.log.
+This script takes the total number of hardware threads availiable on Xeon Phi as its input. On KNC, this parameter is 240. On KNL, it is 288. The results are stored in bandwidth.log and latency.log.
 
 
 ### Contact
