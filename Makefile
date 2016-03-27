@@ -1,13 +1,14 @@
 CC = icc
-CFLAGS = -mmic -O0 -openmp -D_OPENMP 
+CFLAGS = -mmic -g -openmp -D_OPENMP 
+LDFLAGS= -lpthread -lrt -openmp -lstdc++
 
 all: bandwidth latency
 
-bandwidth:
-	icc -lpthread -lrt -O3 -mmic bandwidth.c -o bandwidth -openmp
+bandwidth: bandwidth.c
+	icc $(CFLAGS) bandwidth.c -o bandwidth $(LDFLAGS)
 
-latency:
-	icc -lpthread -lrt -O0 -mmic latency.c -o latency -lstdc++
+latency: latency.c
+	icc $(CFLAGS) latency.c -o latency $(LDFLAGS)
 
 clean:
 	rm -f *.o bandwidth latency

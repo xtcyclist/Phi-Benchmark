@@ -123,7 +123,6 @@ void make_linked_memory(void *mem, long length) {
 
   /* free the ptr list */
   free(ptr_numbers);
-  IDL(4,printf("\n"));
 }
 /* Conducts pointer chasing
 *  @mem, the memory space to chase pointers
@@ -207,7 +206,9 @@ void *thread_remote_l2 (void *parm)
 	int i;
 	
 	make_linked_memory(arg->mem, arg->size);							//both thread generate data for their L2 caches
-	jump_around(arg->mem, L2_CACHE_NUMBER_OF_JUMPS);					//pre-run to load the memory into local caches	
+	pthread_barrier_wait(arg->barrier);
+	
+	jump_around(arg->mem, arg->size);					//pre-run to load the memory into local caches	
 	arg->ptr_per_core[tid]=arg->mem;									//update the global pointer directory
 	self=arg->ptr_per_core[tid];										//udpate the pointer to its own memory sapce
 	
