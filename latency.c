@@ -19,7 +19,7 @@
 #define MEMORY_MAX_ACCESS_LENGTH (1024*1024)		//total length of memory space for the memory latency measurement, the actual size is MEMORY_MAX_ACCESS_LENGTH * sizeof(double)
 #define MEMORY_NUMBER_OF_JUMPS (1024*1024)			//total number of jumps for the memory latency measurement
 #define L2_CACHE_MAX_ACCESS_LENGTH 512*1024				//total length of memory space for L2 latency measurement, the actual size is L2_CACHE_MAX_ACCESS_LENGTH * sizeof(double)
-#define L2_CACHE_NUMBER_OF_JUMPS 65536				//total number of jumps for L2 latency measurement
+#define L2_CACHE_NUMBER_OF_JUMPS 512*1024				//total number of jumps for L2 latency measurement
 
 double d_bi_start_sec; /**< start time */
 static double bi_gettimeofday() {
@@ -223,10 +223,6 @@ void *thread_remote_l2 (void *parm)
 		printf ("From %d to %d:\t", arg->pos[tid], arg->pos[i]);
 		printf ("L2 latency %f ns\n", results[1]);		
 	}
-	else
-	{
-		jump_around(arg->mem, arg->size);					//pre-run to load the memory into local caches	
-	}
 }
 #define MAX_NUM_THREADS 288
 int main (int argc, char **argv)
@@ -264,6 +260,8 @@ int main (int argc, char **argv)
 		pos[0]=atoll(argv[2]);
 		//the location of the remote thread
 		pos[1]=atoll(argv[3]);
+		if (pos[1]==pos[0])
+			pos[1]=pos[0]-1;
 		mem=(void*)malloc(L2_CACHE_MAX_ACCESS_LENGTH*sizeof(double)*threads);
 		for (tt=0;tt<threads;++tt)
 		{
