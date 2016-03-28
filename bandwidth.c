@@ -226,14 +226,14 @@ extern int omp_get_num_threads();
 #endif
 int get_cpu_id (int tid)
 {
-#ifdef SCATTER
-        int gid=tid%60;
-        int iid=(int)(floor(1.0*tid/60));
+//#ifdef SCATTER
+//        int gid=tid%60;
+//        int iid=(int)(floor(1.0*tid/60));
         //printf ("%d\n", (1+gid*4+iid)%240);
-        return (1+gid*4+iid)%240;
-#else
+//        return (1+gid*4+iid)%240;
+//#else
         return tid;
-#endif
+//#endif
 }
 typedef struct 
 {
@@ -375,10 +375,10 @@ int tt, threads;
 
 threads=atoll(argv[1]);
 //prepare for the pthread
-pthread_t tid[240];
-pthread_attr_t attr[240];
+pthread_t tid[288];
+pthread_attr_t attr[288];
 cpu_set_t set;
-argc_t info[240];
+argc_t info[288];
 
 
 for (k=0; k<NTIMES; k++)

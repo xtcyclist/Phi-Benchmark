@@ -1,5 +1,5 @@
 CC = icc
-CFLAGS = -mmic -g -openmp -D_OPENMP -DSCATTER
+CFLAGS = -mmic -O0 -openmp -D_OPENMP -DSCATTER
 LDFLAGS= -lpthread -lrt -openmp -lstdc++
 
 all: bandwidth latency
