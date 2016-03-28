@@ -18,7 +18,7 @@
 
 #define MEMORY_MAX_ACCESS_LENGTH (1024*1024)		//total length of memory space for the memory latency measurement, the actual size is MEMORY_MAX_ACCESS_LENGTH * sizeof(double)
 #define MEMORY_NUMBER_OF_JUMPS (1024*1024)			//total number of jumps for the memory latency measurement
-#define L2_CACHE_MAX_ACCESS_LENGTH 65536				//total length of memory space for L2 latency measurement, the actual size is L2_CACHE_MAX_ACCESS_LENGTH * sizeof(double)
+#define L2_CACHE_MAX_ACCESS_LENGTH 512*1024				//total length of memory space for L2 latency measurement, the actual size is L2_CACHE_MAX_ACCESS_LENGTH * sizeof(double)
 #define L2_CACHE_NUMBER_OF_JUMPS 65536				//total number of jumps for L2 latency measurement
 
 double d_bi_start_sec; /**< start time */
@@ -179,7 +179,7 @@ void *thread (void *parm)
 	results[1]=1000000000*(double)(stop-start)/((double)numjumps);
 	printf ("Average memory latency %f ns\n", results[1]);
 	
-	make_linked_memory(arg->mem, L2_CACHE_MAX_ACCESS_LENGTH);	//generate the memory space for local L2, whose size is 64KB
+	make_linked_memory(arg->mem, L2_CACHE_MAX_ACCESS_LENGTH);	//generate the memory space for local L2, whose size is 512KB
 	ptr = jump_around(arg->mem, L2_CACHE_NUMBER_OF_JUMPS);		//pre-run to load the memory into local caches
  	start=mysecond();
 	ptr = jump_around(arg->mem, L2_CACHE_NUMBER_OF_JUMPS);		//conduct pointer chasing
@@ -203,8 +203,8 @@ void *thread_remote_l2 (void *parm)
 	make_linked_memory(arg->mem, arg->size);							//both thread generate data for their L2 caches
 	pthread_barrier_wait(arg->barrier);
 	
-	jump_around(arg->mem, arg->size);					//pre-run to load the memory into local caches	
 	arg->ptr_per_core[tid]=arg->mem;									//update the global pointer directory
+	jump_around(arg->mem, arg->size);					//pre-run to load the memory into local caches	
 	self=arg->ptr_per_core[tid];										//udpate the pointer to its own memory sapce
 	
 	pthread_barrier_wait(arg->barrier);
@@ -221,7 +221,6 @@ void *thread_remote_l2 (void *parm)
 		}
 		
 		d_bi_start_sec = (double) ((long long) bi_gettimeofday());
-		
 		numjumps=L2_CACHE_NUMBER_OF_JUMPS;								//a smaller number of jumps for jumps in L2 caches
 		
 		start=mysecond();
@@ -230,7 +229,11 @@ void *thread_remote_l2 (void *parm)
 		
 		results[1]=1000000000*(double)(stop-start)/((double)numjumps);
 		printf ("From %d to %d:\t", arg->pos[tid], arg->pos[i]);
-		printf ("Average remote L2 latency %f ns\n", results[1]);		
+		printf ("L2 latency %f ns\n", results[1]);		
+	}
+	else
+	{
+		jump_around(arg->mem, arg->size);					//pre-run to load the memory into local caches	
 	}
 }
 #define MAX_NUM_THREADS 288
@@ -246,7 +249,6 @@ int main (int argc, char **argv)
 	void *mem;
 	argc_t info[MAX_NUM_THREADS];
 	void *ptr_per_core[MAX_NUM_THREADS];
-	
 	pthread_barrier_init(&barrier, NULL, threads);
 	
 	if (threads==1)
@@ -276,7 +278,6 @@ int main (int argc, char **argv)
 			ptr_per_core[tt]=NULL;
 			pthread_attr_init(&attr);
 			CPU_ZERO(&set);
-			//pin the thread to the coresponding core
 			CPU_SET(pos[tt], &set);
 			info[tt].pos=pos;
 			pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &set);
