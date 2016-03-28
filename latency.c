@@ -179,14 +179,6 @@ void *thread (void *parm)
 	results[1]=1000000000*(double)(stop-start)/((double)numjumps);
 	printf ("Average memory latency %f ns\n", results[1]);
 	
-	make_linked_memory(arg->mem, L2_CACHE_MAX_ACCESS_LENGTH);	//generate the memory space for local L2, whose size is 512KB
-	ptr = jump_around(arg->mem, L2_CACHE_NUMBER_OF_JUMPS);		//pre-run to load the memory into local caches
- 	start=mysecond();
-	ptr = jump_around(arg->mem, L2_CACHE_NUMBER_OF_JUMPS);		//conduct pointer chasing
-	stop=mysecond();
-	
-	results[1]=1000000000*(double)(stop-start)/((double)L2_CACHE_NUMBER_OF_JUMPS);
-	printf ("Average local L2 latency %f ns\n", results[1]);
 }
 /* 
 *	The function for a thread to measure its access latency to the L2 cache of a remote core
