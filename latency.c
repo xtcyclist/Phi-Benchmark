@@ -18,8 +18,8 @@
 
 #define MEMORY_MAX_ACCESS_LENGTH (1024*1024)		//total length of memory space for the memory latency measurement, the actual size is MEMORY_MAX_ACCESS_LENGTH * sizeof(double)
 #define MEMORY_NUMBER_OF_JUMPS (1024*1024)			//total number of jumps for the memory latency measurement
-#define L2_CACHE_MAX_ACCESS_LENGTH 8192				//total length of memory space for L2 latency measurement, the actual size is L2_CACHE_MAX_ACCESS_LENGTH * sizeof(double)
-#define L2_CACHE_NUMBER_OF_JUMPS 8192				//total number of jumps for L2 latency measurement
+#define L2_CACHE_MAX_ACCESS_LENGTH 65536				//total length of memory space for L2 latency measurement, the actual size is L2_CACHE_MAX_ACCESS_LENGTH * sizeof(double)
+#define L2_CACHE_NUMBER_OF_JUMPS 65536				//total number of jumps for L2 latency measurement
 
 double d_bi_start_sec; /**< start time */
 static double bi_gettimeofday() {
