@@ -100,14 +100,14 @@ void *thread (void *parm)
 int main (int argc, char **argv)
 {
 	int threads;
-	pthread_t tid[240];
+	pthread_t tid[500];
 	pthread_attr_t attr;
 	pthread_barrier_t barrier;
 	cpu_set_t set;
 	int i,tt;
 	threads=atoll(argv[1]);
-	argc_t info[240];
-	float mem[3840] __attribute__((aligned(64)));
+	argc_t info[500];
+	float mem[8000] __attribute__((aligned(64)));
 	pthread_barrier_init(&barrier, NULL, threads);
 	
 	for ( i=0;i<threads;++i)
