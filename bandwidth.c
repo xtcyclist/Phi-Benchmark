@@ -67,6 +67,9 @@
 #include <immintrin.h>
 #endif
 
+#ifdef MCDRAM
+#include <hbwmalloc.h>
+#endif
 /*-----------------------------------------------------------------------
  * INSTRUCTIONS:
  *
@@ -196,9 +199,9 @@
 #define STREAM_TYPE float
 #endif
 
-STREAM_TYPE	a[STREAM_ARRAY_SIZE+OFFSET] __attribute__((aligned(64)));
-STREAM_TYPE	b[STREAM_ARRAY_SIZE+OFFSET] __attribute__((aligned(64)));
-STREAM_TYPE	c[STREAM_ARRAY_SIZE+OFFSET] __attribute__((aligned(64)));
+STREAM_TYPE	*a;//[STREAM_ARRAY_SIZE+OFFSET] __attribute__((aligned(64)));
+STREAM_TYPE	*b;//[STREAM_ARRAY_SIZE+OFFSET] __attribute__((aligned(64)));
+STREAM_TYPE	*c;//[STREAM_ARRAY_SIZE+OFFSET] __attribute__((aligned(64)));
 
 static double	avgtime[4] = {0}, maxtime[4] = {0},
 		mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
@@ -278,6 +281,19 @@ int main(int argc, char **argv)
 	ssize_t		j;
 	STREAM_TYPE		scalar;
 	double		t, times[4][NTIMES];
+
+	if (hbw_check_available())//returns zero if hbw_malloc is availiable.
+	{
+		posix_memalign(a, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+		posix_memalign(b, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+		posix_memalign(c, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+	}
+	else
+	{
+		hbw_posix_memalign(a, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+		hbw_posix_memalign(b, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+		hbw_posix_memalign(c, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+	}
 
 	/* --- SETUP --- determine precision and check timing --- */
 
