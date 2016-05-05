@@ -17,7 +17,7 @@ In the Makefile, we have specified the target 'MCDRAM' to make the code with 'MC
 
 ### Prerequisites
 
-The memkind library is needed to test bandwidth on MCDRAM. 
+The memkind library is needed to test bandwidth on MCDRAM. This library is availiable at https://github.com/memkind/memkind. 
 
 All components require pthread. 
 
