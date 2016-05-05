@@ -15,10 +15,10 @@ latency: latency.c
 	icc $(CFLAGS) -O0 latency.c -o latency $(LDFLAGS)
 
 single: fmadd.c
-	icc ./fmadd.c -O3 -o fmadd-ps -lpthread -mmic   
+	icc ./fmadd.c -O3 -o fmadd-ps -lpthread $(CFLAGS)   
 
 double: fmadd.c
-	icc ./fmadd.c -O3 -o fmadd-pd -lpthread -mmic -DDOUBLE
+	icc ./fmadd.c -O3 -o fmadd-pd -lpthread $(CFLAGS) -DDOUBLE
 
 clean:
 	rm -f *.o bandwidth latency fmadd-ps fmadd-pd

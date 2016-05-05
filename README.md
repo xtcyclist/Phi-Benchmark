@@ -11,7 +11,7 @@ Phi-Benchmark is coded for the KNC architecture. To compile and run it on KNL, m
 
 ### Bandwidth (DDR or MCDRAM)
 
-With the 'MCDRAM' macro defined, the code in bandwidth.c tests whether MCDRAM is availiable by calling APIs from the memkind library. It it is availiable, spaces would be allocated in the MCDRAM for the bandwidth measurement. If 'MCDRAM' is not defined, DDR would be used. 
+With the 'MCDRAM' macro defined, the code in bandwidth.c tests whether MCDRAM is availiable by calling APIs from the memkind library (lines 281 - 298). If it is availiable, spaces would be allocated in the MCDRAM for the bandwidth measurement. If 'MCDRAM' is not defined, DDR would be used. 
 
 In the Makefile, we have specified the target 'MCDRAM' to make the code with 'MCDRAM' defined, and the target 'bandwidth' for the normal DDR. 
 
@@ -45,6 +45,10 @@ Four executables will be generated in total:
   - latency
 
 fmadd-ps and fmadd-pd are to measure the floting-point arthmetic computation throughput of single-precision and double-precision, respectively. bandwidth, and latency are to measure the main memory bandwidth and latency. 
+
+### Modifications to compile the codes for KNL
+
+To the best of our knowledge, the compilation flag '-mmic' needs to be removed for KNL. Please do so in the Makefile by deleting it in the 'CFLAGS'. 
 
 ### Upload excutables to Xeon Phi
 
