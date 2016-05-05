@@ -1,0 +1,2 @@
+This version is for single-precision. 
+To run, execute ./fmadd [#threads]. For example, ./fmadd 240. 
