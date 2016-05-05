@@ -1,2 +1,2 @@
-This version is for single-precision. 
-To run, execute ./fmadd [#threads]. For example, ./fmadd 240. 
+To make, execute make.
+To run, execute ./fmadd-ps [#threads] for single-precision, or ./fmadd-pd [#threads] for double-precision. For example, ./fmadd-ps 240. 
