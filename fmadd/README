@@ -1,2 +1,4 @@
+You need to modify the scp command in the Makefile in order to upload the program to the mic cards properly. 
+
 To make, execute make.
 To run, execute ./fmadd-ps [#threads] for single-precision, or ./fmadd-pd [#threads] for double-precision. For example, ./fmadd-ps 240. 

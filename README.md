@@ -8,6 +8,10 @@ Parts of the codes are adopted from STREAM and BENCHIT.
 
 Phi-Benchmark is coded for the KNC architecture. To compile and run it on KNL, modifications may be needed. 
 
+### fmadd
+
+The fmadd folder contains the benchmark to test the peak flops of multiply-add operations of single and double precisions. Please refert to the README file in that folder for details. 
+
 ### Compile
 All codes are cross-compiled to run natively on Xeon Phi. To compile, run
 
