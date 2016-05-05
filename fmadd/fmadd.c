@@ -11,7 +11,11 @@
 #include <unistd.h>
 #include <stdio.h>
 #include "immintrin.h"
+#ifndef DOUBLE
 #define ONE {a=_mm512_fmadd_ps(a,b,c);b=_mm512_fmadd_ps(a,b,c);c=_mm512_fmadd_ps(a,b,c);}
+#else
+#define ONE {a=_mm512_fmadd_pd(a,b,c);b=_mm512_fmadd_pd(a,b,c);c=_mm512_fmadd_pd(a,b,c);}
+#endif
 #define TEN ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE
 #define HUN TEN TEN TEN TEN TEN TEN TEN TEN TEN TEN
 #define THO HUN HUN HUN HUN HUN HUN HUN HUN HUN HUN
@@ -56,11 +60,17 @@ void *thread (void *parm)
 
 	double start, stop;
 	int i;
+	#ifndef DOUBLE
 	__m512 a, b, c, d;
 	a=_mm512_set4_ps(1.1, 2.1, 3.1, 4.1);
 	b=_mm512_set4_ps(1.2, 2.2, 3.2, 4.2);
 	c=_mm512_set4_ps(1.3, 2.3, 3.3, 4.3);
-
+	#else
+	__m512d a, b, c, d;
+	a=_mm512_set4_pd(1.1, 2.1, 3.1, 4.1);
+	b=_mm512_set4_pd(1.2, 2.2, 3.2, 4.2);
+	c=_mm512_set4_pd(1.3, 2.3, 3.3, 4.3);
+	#endif
 	start=mysecond();
         //pthread_barrier_wait(arg->barrier);
  	//#pragma unroll
@@ -70,11 +80,18 @@ void *thread (void *parm)
  	}
         //pthread_barrier_wait(arg->barrier);
 	stop=mysecond();
+	#ifndef DOUBLE
 	_mm512_store_ps(arg->mem,c);
-	
+	#else
+	_mm512_store_pd(arg->mem,c);
+	#endif
 	if(arg->tid==0)
 	{
+		#ifndef DOUBLE
 		results[1]=arg->threads*100*100*3*2*16/(double)(stop-start);
+		#else
+		results[1]=arg->threads*100*100*3*2*8/(double)(stop-start);
+		#endif
 		printf ("GFLOPS %f \n", results[1]/1000000000);
 	}	
 
