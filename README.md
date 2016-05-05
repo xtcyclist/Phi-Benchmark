@@ -50,6 +50,8 @@ fmadd-ps and fmadd-pd are to measure the floting-point arthmetic computation thr
 
 To the best of our knowledge, the compilation flag '-mmic' needs to be removed for KNL. Please do so in the Makefile by deleting it in the 'CFLAGS'. 
 
+Other modifications may be needed. Since we do not have KNL, we are unable to list these modifications for now. 
+
 ### Upload excutables to Xeon Phi
 
 The executables and scripts need to be uploaded to the Xeon Phi manually. 
