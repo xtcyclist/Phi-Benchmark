@@ -260,15 +260,11 @@ void *copy (void *parm)
 	for (i=0;i<arg->size;i+=16)
 	{
 		__m512 key = _mm512_load_ps(&a[i]);
-		//#pragma unroll
-		//for (j=0;j<DEPTH;++j)
-		//	key=_mm512_add_ps(key,key);
 		_mm512_storenrngo_ps(&b[i], key);		
 	}
 	pthread_barrier_wait(arg->barrier);
 	time=mysecond()-time;
 	arg->time=time;
-	//printf ("%lf\n", arg->time);
 	pthread_exit(NULL);
 }
 
@@ -281,19 +277,25 @@ int main(int argc, char **argv)
 	ssize_t		j;
 	STREAM_TYPE		scalar;
 	double		t, times[4][NTIMES];
-
+	
+	#ifdef MCDRAM
 	if (hbw_check_available())//returns zero if hbw_malloc is availiable.
 	{
-		posix_memalign(a, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
-		posix_memalign(b, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
-		posix_memalign(c, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+		posix_memalign(&a, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+		posix_memalign(&b, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+		posix_memalign(&c, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
 	}
 	else
 	{
-		hbw_posix_memalign(a, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
-		hbw_posix_memalign(b, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
-		hbw_posix_memalign(c, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+		hbw_posix_memalign(&a, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+		hbw_posix_memalign(&b, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+		hbw_posix_memalign(&c, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
 	}
+	#else
+                posix_memalign(&a, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+                posix_memalign(&b, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+                posix_memalign(&c, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+	#endif
 
 	/* --- SETUP --- determine precision and check timing --- */
 
@@ -305,83 +307,11 @@ int main(int argc, char **argv)
 	//BytesPerWord);
 
 	//printf(HLINE);
-#ifdef N
-	//printf("*****  WARNING: ******\n");
-	//printf("      It appears that you set the preprocessor variable N when compiling this code.\n");
-	//printf("      This version of the code uses the preprocesor variable STREAM_ARRAY_SIZE to control the array size\n");
-	//printf("      Reverting to default value of STREAM_ARRAY_SIZE=%llu\n",(unsigned long long) STREAM_ARRAY_SIZE);
-	//printf("*****  WARNING: ******\n");
-#endif
-
-	//printf("Array size = %llu (elements), Offset = %d (elements)\n" , (unsigned long long) STREAM_ARRAY_SIZE, OFFSET);
-	//printf("Memory per array = %.1f MiB (= %.1f GiB).\n", 
-	//BytesPerWord * ( (double) STREAM_ARRAY_SIZE / 1024.0/1024.0),
-	//BytesPerWord * ( (double) STREAM_ARRAY_SIZE / 1024.0/1024.0/1024.0));
-	//printf("Total memory required = %.1f MiB (= %.1f GiB).\n",
-	//(3.0 * BytesPerWord) * ( (double) STREAM_ARRAY_SIZE / 1024.0/1024.),
-	//(3.0 * BytesPerWord) * ( (double) STREAM_ARRAY_SIZE / 1024.0/1024./1024.));
-	//printf("Each kernel will be executed %d times.\n", NTIMES);
-	//printf(" The *best* time for each kernel (excluding the first iteration)\n"); 
-	//printf(" will be used to compute the reported bandwidth.\n");
-
-#ifdef _OPENMP
-	//printf(HLINE);
-#pragma omp parallel 
-	{
-#pragma omp master
-		{
-			k = omp_get_num_threads();
-			//printf ("Number of Threads requested = %i\n",k);
-		}
-	}
-#endif
-
-#ifdef _OPENMP
-	k = 0;
-#pragma omp parallel
-#pragma omp atomic 
-	k++;
-	//printf ("Number of Threads counted = %i\n",k);
-#endif
-
-	/* Get initial value for system clock. */
 	for (j=0; j<STREAM_ARRAY_SIZE; j++) {
 		a[j] = 1.0;
 		b[j] = 2.0;
 		//c[j] = 0.0;
 	}
-
-	//printf(HLINE);
-
-	//if  ( (quantum = checktick()) >= 1) 
-	//printf("Your clock granularity/precision appears to be "
-	//    "%d microseconds.\n", quantum);
-	//else {
-	//printf("Your clock granularity appears to be "
-	//    "less than one microsecond.\n");
-	//quantum = 1;
-	//}
-
-	/*    t = mysecond();
-#pragma omp parallel for
-for (j = 0; j < STREAM_ARRAY_SIZE; j++)
-{
-a[j] = 2.0E0 * a[j];
-}
-t = 1.0E6 * (mysecond() - t);*/
-
-//printf("Each test below will take on the order"
-//" of %d microseconds.\n", (int) t  );
-//printf("   (= %d clock ticks)\n", (int) (t/quantum) );
-//printf("Increase the size of the arrays if this shows that\n");
-//printf("you are not getting at least 20 clock ticks per test.\n");
-
-//printf(HLINE);
-
-//printf("WARNING -- The above is only a rough guideline.\n");
-//printf("For best results, please be sure you know the\n");
-//printf("precision of your system timer.\n");
-//printf(HLINE);
 
 /*	--- MAIN LOOP --- repeat test cases NTIMES times --- */
 
@@ -442,58 +372,7 @@ for (k=0; k<NTIMES; k++)
 		times[0][k]+=info[tt].time;
 	}
 	times[0][k] = times[0][k]/threads;
-	//times[0][k]=mysecond()-times[0][k];
 #endif
-	//times[0][k]=mysecond()-times[0][k];
-	/*
-	   __m512 s_vec=_mm512_set1_ps(scalar);
-	   times[1][k] = mysecond();
-#ifdef TUNED
-tuned_STREAM_Scale(scalar);
-#else
-#pragma omp parallel for
-for (j=0; j<STREAM_ARRAY_SIZE; j+=16)
-{
-	//b[j] = scalar*c[j];
-	__m512 key = _mm512_load_ps(&c[j]);
-	key=_mm512_mul_ps(key,s_vec);
-	_mm512_storenrngo_ps(&b[j], key);
-	}
-#endif
-times[1][k] = mysecond() - times[1][k];
-
-times[2][k] = mysecond();
-#ifdef TUNED
-tuned_STREAM_Add();
-#else
-#pragma omp parallel for
-for (j=0; j<STREAM_ARRAY_SIZE; j+=16)
-{
-	//c[j] = a[j]+b[j];
-	__m512 key_a = _mm512_load_ps(&a[j]);
-	__m512 key_b = _mm512_load_ps(&b[j]);
-	__m512 key_c = _mm512_add_ps(key_a, key_b); 
-	_mm512_storenrngo_ps(&c[j], key_c);
-	}
-#endif
-times[2][k] = mysecond() - times[2][k]; 
-
-times[3][k] = mysecond();
-#ifdef TUNED
-tuned_STREAM_Triad(scalar);
-#else
-#pragma omp parallel for
-for (j=0; j<STREAM_ARRAY_SIZE; j+=16)
-{
-	//a[j] = b[j]+scalar*c[j];
-	__m512 key_c = _mm512_load_ps(&c[j]);
-	__m512 key_b = _mm512_load_ps(&b[j]);
-	__m512 key_a = _mm512_fmadd_ps (key_c, s_vec, key_b);
-	_mm512_storenrngo_ps(&a[j], key_a);
-	}
-#endif
-times[3][k] = mysecond() - times[3][k];
-*/
 
 
 	}
@@ -515,19 +394,8 @@ for (k=1; k<NTIMES; k++) /* note -- skip first iteration */
 for (j=0; j<1; j++) {
 	avgtime[j] = avgtime[j]/(double)(NTIMES-1);
 
-	/*printf("%s%12.1f  %11.6f  %11.6f  %11.6f\n", label[j],
-	  1.0E-06 * bytes[j]/mintime[j],
-	  avgtime[j],
-	  mintime[j],
-	  maxtime[j]);*/
 	printf("Read and write bandwidth (MB/s): %12.1f\n", 1.0E-06 * bytes[j]/mintime[j]);
 }
-//printf(HLINE);
-
-/* --- Check Results --- */
-//checkSTREAMresults();
-//printf(HLINE);
-
 return 0;
 }
 

@@ -1,11 +1,15 @@
 CC = icc
-CFLAGS = -mmic -openmp -D_OPENMP -DSCATTER
-LDFLAGS= -lpthread -lrt -openmp -lstdc++ -lmemkind -L/usr/local/lib
+CFLAGS = -mmic -DSCATTER
+LDFLAGS= -lpthread -lrt -lstdc++ -L/usr/local/lib
+MCDRAM_LDFLAGS=-lmemkind
 
 all: bandwidth latency single double
 
 bandwidth: bandwidth.c
-	icc $(CFLAGS) -O2 bandwidth.c -o bandwidth $(LDFLAGS) 
+	icc $(CFLAGS) -O2 bandwidth.c -o bandwidth $(LDFLAGS)
+
+MCDRAM: bandwidth.c
+	icc $(CFLAGS) -O2 bandwidth.c -DMCDRAM -o bandwidth $(LDFLAGS) $(MCDRAM_LDFLAGS) 
 
 latency: latency.c
 	icc $(CFLAGS) -O0 latency.c -o latency $(LDFLAGS)
