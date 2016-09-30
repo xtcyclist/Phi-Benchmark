@@ -1,5 +1,5 @@
 CC = icc
-CFLAGS = -mmic -DSCATTER
+CFLAGS = -DSCATTER
 LDFLAGS= -lpthread -lrt -lstdc++ -L/usr/local/lib
 MCDRAM_LDFLAGS=-lmemkind
 

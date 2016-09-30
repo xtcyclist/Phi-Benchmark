@@ -61,58 +61,12 @@
 #include <sched.h>
 #include <time.h>
 
-#ifdef __MIC
-//#warning Compile the code for Xeon Phi
-
 #include <immintrin.h>
-#endif
 
 #ifdef MCDRAM
 #include <hbwmalloc.h>
 #endif
-/*-----------------------------------------------------------------------
- * INSTRUCTIONS:
- *
- *	1) STREAM requires different amounts of memory to run on different
- *           systems, depending on both the system cache size(s) and the
- *           granularity of the system timer.
- *     You should adjust the value of 'STREAM_ARRAY_SIZE' (below)
- *           to meet *both* of the following criteria:
- *       (a) Each array must be at least 4 times the size of the
- *           available cache memory. I don't worry about the difference
- *           between 10^6 and 2^20, so in practice the minimum array size
- *           is about 3.8 times the cache size.
- *           Example 1: One Xeon E3 with 8 MB L3 cache
- *               STREAM_ARRAY_SIZE should be >= 4 million, giving
- *               an array size of 30.5 MB and a total memory requirement
- *               of 91.5 MB.  
- *           Example 2: Two Xeon E5's with 20 MB L3 cache each (using OpenMP)
- *               STREAM_ARRAY_SIZE should be >= 20 million, giving
- *               an array size of 153 MB and a total memory requirement
- *               of 458 MB.  
- *       (b) The size should be large enough so that the 'timing calibration'
- *           output by the program is at least 20 clock-ticks.  
- *           Example: most versions of Windows have a 10 millisecond timer
- *               granularity.  20 "ticks" at 10 ms/tic is 200 milliseconds.
- *               If the chip is capable of 10 GB/s, it moves 2 GB in 200 msec.
- *               This means the each array must be at least 1 GB, or 128M elements.
- *
- *      Version 5.10 increases the default array size from 2 million
- *          elements to 10 million elements in response to the increasing
- *          size of L3 caches.  The new default size is large enough for caches
- *          up to 20 MB. 
- *      Version 5.10 changes the loop index variables from "register int"
- *          to "ssize_t", which allows array indices >2^32 (4 billion)
- *          on properly configured 64-bit systems.  Additional compiler options
- *          (such as "-mcmodel=medium") may be required for large memory runs.
- *
- *      Array size can be set at compile time without modifying the source
- *          code for the (many) compilers that support preprocessor definitions
- *          on the compile line.  E.g.,
- *                gcc -O -DSTREAM_ARRAY_SIZE=100000000 stream.c -o stream.100M
- *          will override the default size of 10M with a new size of 100M elements
- *          per array.
- */
+
 #ifndef STREAM_ARRAY_SIZE
 #   define STREAM_ARRAY_SIZE	128000000
 #endif
@@ -260,7 +214,7 @@ void *copy (void *parm)
 	for (i=0;i<arg->size;i+=16)
 	{
 		__m512 key = _mm512_load_ps(&a[i]);
-		_mm512_storenrngo_ps(&b[i], key);		
+		_mm512_stream_ps (&b[i], key);		
 	}
 	pthread_barrier_wait(arg->barrier);
 	time=mysecond()-time;
@@ -292,9 +246,9 @@ int main(int argc, char **argv)
 		hbw_posix_memalign(&c, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
 	}
 	#else
-                posix_memalign(&a, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
-                posix_memalign(&b, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
-                posix_memalign(&c, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+		posix_memalign((void**)&a, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+		posix_memalign((void**)&b, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
+		posix_memalign((void**)&c, 64, sizeof(STREAM_TYPE)*STREAM_ARRAY_SIZE+OFFSET);
 	#endif
 
 	/* --- SETUP --- determine precision and check timing --- */
@@ -394,7 +348,7 @@ for (k=1; k<NTIMES; k++) /* note -- skip first iteration */
 for (j=0; j<1; j++) {
 	avgtime[j] = avgtime[j]/(double)(NTIMES-1);
 
-	printf("Read and write bandwidth (MB/s): %12.1f\n", 1.0E-06 * bytes[j]/mintime[j]);
+	printf("Threads:\t%d\tRead and write bandwidth (MB/s):\t%12.1f\n", threads,1.0E-06 * bytes[j]/mintime[j]);
 }
 return 0;
 }
@@ -406,8 +360,6 @@ checktick()
 {
 	int		i, minDelta, Delta;
 	double	t1, t2, timesfound[M];
-
-	/*  Collect a sequence of M unique time values from the system. */
 
 	for (i = 0; i < M; i++) {
 		t1 = mysecond();
